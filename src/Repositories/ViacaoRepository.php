@@ -21,7 +21,8 @@ final class ViacaoRepository
    */
   public function all(string $busca, string $status, string $ordem, string $dir): array
   {
-    $sql    = 'SELECT * FROM viacoes WHERE 1=1';
+      //alteração em que aparece somente onde deleted_ate é null
+    $sql    = 'SELECT * FROM viacoes WHERE deleted_at IS NULL';
     $params = [];
 
     if ($busca !== '') {
@@ -52,7 +53,8 @@ final class ViacaoRepository
 
   public function find(int $id): ?Viacao
   {
-    $stmt = $this->pdo->prepare('SELECT * FROM viacoes WHERE id = :id');
+      //adição do final no stmt para que ele selecione a maneira correta
+    $stmt = $this->pdo->prepare('SELECT * FROM viacoes WHERE id = :id AND deleted_at IS NULL');
     $stmt->execute(['id' => $id]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -88,9 +90,15 @@ final class ViacaoRepository
     $stmt->execute($data);
   }
 
-  public function delete(int $id): void
-  {
-    $stmt = $this->pdo->prepare('DELETE FROM viacoes WHERE id = :id');
-    $stmt->execute(['id' => $id]);
-  }
+//  public function delete(int $id): void
+//  {
+//    $stmt = $this->pdo->prepare('DELETE FROM viacoes WHERE id = :id');
+//    $stmt->execute(['id' => $id]);
+//  }
+    public function delete(int $id): void
+    {
+        // ALTERAÇÃO: Transforma o DELETE físico em um UPDATE lógico
+        $stmt = $this->pdo->prepare('UPDATE viacoes SET deleted_at = NOW(), status = "inativo" WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+    }
 }

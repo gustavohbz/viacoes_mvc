@@ -14,6 +14,8 @@ final class Viacao
         public ?string $logo,
         public ?string $criadoEm,
         public ?string $alteradoEm,
+        //adicionado a linha que recupera o deleted_at 22/05
+        public ?string $excluidoEm,
     ) {}
 
     // Converte o array bruto do PDO em um objeto tipado.
@@ -28,6 +30,7 @@ final class Viacao
             logo: $row['logo'] ?? null,
             criadoEm: $row['criado_em'] ?? null,
             alteradoEm: $row['alterado_em'] ?? null,
+            excluidoEm: $row['deleted_at'] ?? null,
         );
     }
 }
