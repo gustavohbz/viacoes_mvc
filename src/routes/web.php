@@ -29,6 +29,7 @@ $router->get('/logout', [AuthController::class, 'logout']);
 
 // ── Admin — Viações ───────────────────────────────────────
 // CORREÇÃO: todas as rotas admin protegidas com AuthMiddleware.
+//rota de index,criacao,edição,infos sobre uma em especifico com metodo PUT
 $router->get('/admin/viacoes',           [ViacaoController::class, 'index'])
   ->middleware(AuthMiddleware::class);
 
@@ -40,12 +41,16 @@ $router->post('/admin/viacoes',          [ViacaoController::class, 'store'])
 
 $router->get('/admin/viacoes/{id}/edit', [ViacaoController::class, 'edit'])
   ->middleware(AuthMiddleware::class);
-
+//rota com metodo PUT,atualiza os dados existentes
 $router->put('/admin/viacoes/{id}',      [ViacaoController::class, 'update'])
   ->middleware(AuthMiddleware::class);
 
 $router->delete('/admin/viacoes/{id}',   [ViacaoController::class, 'destroy'])
   ->middleware(AuthMiddleware::class);
+//rota de historico proprio
+$router->get('/admin/viacoes/{id}/historico-viacao', [HistoricoController::class, 'index_viacao'])
+    ->middleware(AuthMiddleware::class);
+
 
 // ── Admin — Usuários ──────────────────────────────────────
 // NOVAS ROTAS: Mapeamento completo do CRUD de Usuários protegido por login
@@ -66,6 +71,9 @@ $router->put('/admin/usuarios/{id}',      [UsuarioController::class, 'update'])
 
 $router->delete('/admin/usuarios/{id}',   [UsuarioController::class, 'destroy'])
   ->middleware(AuthMiddleware::class);
+//historico especifico do usuario
+$router->get('/admin/usuarios/{id}/historico-usuarios', [HistoricoController::class, 'index_usuarios'])
+    ->middleware(AuthMiddleware::class);
 
 // ── Admin — Histórico ─────────────────────────────────────
 $router->get('/admin/historico', [HistoricoController::class, 'index'])

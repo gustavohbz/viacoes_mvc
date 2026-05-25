@@ -42,7 +42,7 @@ $flash      = View::pullFlash();
   <section class="header-actions">
     <div class="header-buttons">
       <a href="/admin/viacoes/create" class="btn btn-primary">+ Nova Viação</a>
-      <a href="/admin/historico" class="btn btn-secondary">Ver Histórico</a>
+      <a href="/admin/historico" class="btn btn-secondary">Ver Histórico Geral</a>
       <a href="/admin/usuarios" class="btn btn-secondary">Gerenciar Usuários</a>
     </div>
 
@@ -122,6 +122,8 @@ $flash      = View::pullFlash();
               <div class="table-actions">
                 <a href="/admin/viacoes/<?= (int) $v->id ?>/edit"
                    class="btn-action btn-edit">Editar</a>
+                  <a href="/admin/viacoes/<?= (int) $v->id ?>/historico-viacao"
+                     class="btn-action btn-edit">Historico</a>
 
                 <form method="POST"
                       action="/admin/viacoes/<?= (int) $v->id ?>"

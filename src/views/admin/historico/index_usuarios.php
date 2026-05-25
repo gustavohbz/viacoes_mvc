@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerenciamento de Usuários</title>
+  <title>Historico do Usuário</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 
@@ -13,7 +13,7 @@
   <!-- HEADER -->
   <header class="page-header">
     <div>
-      <h1 class="page-title">Gerenciamento de Usuários</h1>
+        <h1 class="page-title">Usuário <?= (int) $filtros['user_id'] ?></h1>
       <p class="page-subtitle">Cadastre, edite e gerencie os usuários do sistema</p>
     </div>
   </header>
@@ -120,9 +120,9 @@
                    class="btn-action btn-edit">
                   Editar
                 </a>
-                  <a href="/admin/usuarios/<?= (int) $usuario->id ?>/historico-usuarios"
+                  <a href="/admin/usuarios/<?= (int) $usuario->id ?>/historico_usuarios"
                      class="btn-action btn-edit">
-                      historico
+                      Editar
                   </a>
 
                 <?php if ($usuario->id !== $userLogadoId): ?>
