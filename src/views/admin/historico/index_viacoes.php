@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Histórico da viação #<?= (int) $v['id'] ?></title>
+  <title>Histórico</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 
@@ -13,8 +13,8 @@
   <!-- HEADER -->
   <header class="page-header">
     <div>
-      <h1 class="page-title">Histórico de Alterações</h1>
-      <p class="page-subtitle">Registro de todas as ações realizadas na plataforma</p>
+      <h1 class="page-title"><?= htmlspecialchars((string) $filtros['nome']) ?></h1>
+      <p class="page-subtitle">Registro de todas as ações referentes a <?= htmlspecialchars((string) $filtros['nome']) ?> </p>
     </div>
   </header>
 
@@ -24,38 +24,37 @@
       <a href="/admin/viacoes" class="btn btn-secondary">Voltar para a lista</a>
     </div>
 
-    <form method="GET" action="/admin/historico" class="form-busca">
+      <form method="GET" action="/admin/viacoes/<?= (int) $filtros['viacao_id'] ?>/historico-viacao" class="form-busca">
 
-      <?php if (!empty($viacoes)): ?>
-        <select name="viacao_id">
-          <option value="">Todas as viações</option>
-          <?php foreach ($viacoes as $v): ?>
-            <option value="<?= (int) $v['id'] ?>"
-              <?= ($filtros['viacao_id'] == $v['id']) ? 'selected' : '' ?>>
-              <?= htmlspecialchars($v['nome']) ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-      <?php endif; ?>
+          <?php if (!empty($usuarios)): ?>
+              <select name="user_id">
+                  <option value="">Todos os Usuários</option>
+                  <?php foreach ($usuarios as $u): ?>
+                      <option value="<?= (int) $u['id'] ?>"
+                              <?= ((string)$filtros['user_id'] === (string)$u['id']) ? 'selected' : '' ?>>
+                          <?= htmlspecialchars($u['nome']) ?>
+                      </option>
+                  <?php endforeach; ?>
+              </select>
+          <?php endif; ?>
 
-      <select name="acao">
-        <option value="">Todas as ações</option>
-        <option value="CREATE" <?= ($filtros['acao'] ?? '') === 'CREATE' ? 'selected' : '' ?>>Criado</option>
-        <option value="UPDATE" <?= ($filtros['acao'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Editado</option>
-        <option value="DELETE" <?= ($filtros['acao'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Excluído</option>
-      </select>
+          <select name="acao">
+              <option value="">Todas as ações</option>
+              <option value="CREATE" <?= ($filtros['acao'] ?? '') === 'CREATE' ? 'selected' : '' ?>>Criado</option>
+              <option value="UPDATE" <?= ($filtros['acao'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Editado</option>
+              <option value="DELETE" <?= ($filtros['acao'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Excluído</option>
+          </select>
 
-      <input type="date" name="data_ini" value="<?= htmlspecialchars($filtros['data_ini'] ?? '') ?>" title="Data inicial">
-      <input type="date" name="data_fim" value="<?= htmlspecialchars($filtros['data_fim'] ?? '') ?>" title="Data final">
+          <input type="date" name="data_ini" value="<?= htmlspecialchars($filtros['data_ini'] ?? '') ?>" title="Data inicial">
+          <input type="date" name="data_fim" value="<?= htmlspecialchars($filtros['data_fim'] ?? '') ?>" title="Data final">
 
-      <button type="submit" class="btn btn-search">Filtrar</button>
+          <button type="submit" class="btn btn-search">Filtrar</button>
 
-      <?php if (array_filter($filtros)): ?>
-        <a href="/admin/historico" class="btn-limpar">Limpar</a>
-      <?php endif; ?>
+          <?php if (!empty($_GET['user_id']) || !empty($_GET['acao']) || !empty($_GET['data_ini']) || !empty($_GET['data_fim'])): ?>
+              <a href="/admin/viacoes/<?= (int) $filtros['viacao_id'] ?>/historico-viacao" class="btn-limpar">Limpar</a>
+          <?php endif; ?>
 
-    </form>
-  </section>
+      </form>
 
   <!-- TABELA -->
   <div class="table-wrapper">
@@ -73,37 +72,38 @@
       <table class="table">
         <thead>
         <tr>
-          <th>Data/Hora</th>
-          <th>Usuário</th>
-          <th>Ação</th>
-          <th>Antes</th>
-          <th>Depois</th>
+            <th>ID</th>
+            <th>Data da Modificação</th>
+            <th>Usuário</th>
+            <th>Ação</th>
+            <th>Antes</th>
+            <th>Depois</th>
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($historico as $log): ?>
+        <?php foreach ($historico as $item): ?>
           <tr>
-
+            <td><?= $item->id ?></td>
             <!-- DATA/HORA -->
-            <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($log->criadoEm))) ?></td>
+            <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($item->criadoEm))) ?></td>
 
             <!-- USUÁRIO -->
-            <td><?= htmlspecialchars($log->usuarioNome ?? '—') ?></td>
+            <td><?= htmlspecialchars($item->usuarioNome ?? '—') ?></td>
 
             <!-- AÇÃO -->
             <td>
               <?php
-              $classe = match($log->acao) {
+              $classe = match($item->acao) {
                 'CREATE' => 'criou',
                 'UPDATE' => 'editou',
                 'DELETE' => 'excluiu',
                 default  => '',
               };
-              $label = match($log->acao) {
+              $label = match($item->acao) {
                 'CREATE' => 'Criado',
                 'UPDATE' => 'Editado',
                 'DELETE' => 'Excluído',
-                default  => htmlspecialchars($log->acao),
+                default  => htmlspecialchars($item->acao),
               };
               ?>
               <span class="<?= $classe ?>"><?= $label ?></span>
@@ -112,8 +112,8 @@
             <!-- ANTES -->
             <!-- CORREÇÃO: antes/depois agora são JSON decodificados corretamente -->
             <td class="detalhes-col">
-              <?php if ($log->antes !== null): ?>
-                <?php foreach (($log->antesArray() ?? []) as $chave => $valor): ?>
+              <?php if ($item->antes !== null): ?>
+                <?php foreach (($item->antesArray() ?? []) as $chave => $valor): ?>
                   <div><strong><?= htmlspecialchars((string) $chave) ?>:</strong> <?= htmlspecialchars((string) $valor) ?></div>
                 <?php endforeach; ?>
               <?php else: ?>
@@ -123,8 +123,8 @@
 
             <!-- DEPOIS -->
             <td class="detalhes-col">
-              <?php if ($log->depois !== null): ?>
-                <?php foreach (($log->depoisArray() ?? []) as $chave => $valor): ?>
+              <?php if ($item->depois !== null): ?>
+                <?php foreach (($item->depoisArray() ?? []) as $chave => $valor): ?>
                   <div><strong><?= htmlspecialchars((string) $chave) ?>:</strong> <?= htmlspecialchars((string) $valor) ?></div>
                 <?php endforeach; ?>
               <?php else: ?>
