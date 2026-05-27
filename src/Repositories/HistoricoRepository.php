@@ -28,6 +28,7 @@ final class HistoricoRepository
      * acao?:      string,
      * data_ini?:  string,
      * data_fim?:  string,
+     * status?:    string,
      * } $filtros
      *
      * @return Historico[]
@@ -45,7 +46,8 @@ final class HistoricoRepository
                 h.criado_em,
                 v.nome  AS viacao_nome,
                 u.nome  AS usuario_nome,
-                u.email AS usuario_email
+                u.email AS usuario_email,
+                v.deleted_at AS viacao_deleted_at 
             FROM  viacoes_historico h
             LEFT  JOIN viacoes v ON v.id = h.viacao_id
             LEFT  JOIN users   u ON u.id = h.user_id
@@ -75,19 +77,30 @@ final class HistoricoRepository
             $params['acao'] = $acao;
         }
 
-        // Filtro: data inicial (yyyy-mm-dd) - AJUSTADO: Usando h.criado_em
+        // Filtro: data inicial (yyyy-mm-dd)
         if (!empty($filtros['data_ini'])) {
             $sql              .= ' AND DATE(h.criado_em) >= :data_ini';
             $params['data_ini'] = $filtros['data_ini'];
         }
 
-        // Filtro: data final (yyyy-mm-dd) - AJUSTADO: Usando h.criado_em
+        // Filtro: data final (yyyy-mm-dd)
         if (!empty($filtros['data_fim'])) {
             $sql              .= ' AND DATE(h.criado_em) <= :data_fim';
             $params['data_fim'] = $filtros['data_fim'];
         }
 
-        // AJUSTADO: Ordenando por h.criado_em
+        //--------------Captura o status vindo do array de filtros da tela de histórico---------
+        $status = $filtros['status'] ?? '';
+
+        if ($status === 'deletados') {
+            // traz so oq sofreu soft delete
+            $sql .= ' AND v.deleted_at IS NOT NULL';
+        } else {
+            //aqui ele so puxa por padrao as viacoes que nao sao excluidas no soft delete
+            $sql .= ' AND v.deleted_at IS NULL';
+        }
+        //--------------27/06 - Adicionei esse bloco para filtragem do soft delete ---------------
+        // Ordenando por h.criado_em
         $sql .= ' ORDER BY h.criado_em DESC';
 
         $stmt = $this->pdo->prepare($sql);

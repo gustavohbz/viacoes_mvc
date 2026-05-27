@@ -5,33 +5,41 @@ namespace App\Controllers;
 
 use App\Core\View;
 use App\Repositories\HistoricoRepository;
-use App\Repositories\UsuarioRepository;
 
 final class HistoricoController
 {
-  public function index(): void //chama o index do historico
-  {
-    $repo = new HistoricoRepository();
+    public function index(): void
+    {
+        $repo = new HistoricoRepository();
+        $status = trim((string) ($_GET['status'] ?? ''));
+        $busca = trim((string) ($_GET['busca'] ?? ''));
+        if (strtolower($busca) === 'deletados') {
+            $status = 'deletados';
+        }
 
-    $filtros = [ //
-      'viacao_id' => trim((string) ($_GET['viacao_id'] ?? '')),
-      'user_id'   => trim((string) ($_GET['user_id']   ?? '')),
-      'acao'      => trim((string) ($_GET['acao']       ?? '')),
-      'data_ini'  => trim((string) ($_GET['data_ini']   ?? '')),
-      'data_fim'  => trim((string) ($_GET['data_fim']   ?? '')),
-    ];
+        $filtros = [
+            'viacao_id' => trim((string) ($_GET['viacao_id'] ?? '')),
+            'user_id'   => trim((string) ($_GET['user_id']   ?? '')),
+            'acao'      => trim((string) ($_GET['acao']       ?? '')),
+            'data_ini'  => trim((string) ($_GET['data_ini']   ?? '')),
+            'data_fim'  => trim((string) ($_GET['data_fim']   ?? '')),
+            'status'    => $status, //recebe o status tratado
+            'busca'     => $busca,
+        ];
 
-    View::render('admin/historico/index', [
-      'historico' => $repo->all($filtros),
-      'viacoes'   => $repo->listViacoes(),
-      'usuarios'  => $repo->listUsuarios(),
-      'filtros'   => $filtros,
-    ]);
-  }
-  //embaixo e a mesma função do usuarios_index apenas adaptei
+        View::render('admin/historico/index', [
+            'historico' => $repo->all($filtros),
+            'viacoes'   => $repo->listViacoes(),
+            'usuarios'  => $repo->listUsuarios(),
+            'filtros'   => $filtros,
+        ]);
+    }
+
     public function index_viacao($id): void
     {
         $repo = new HistoricoRepository();
+
+        $status = trim((string) ($_GET['status'] ?? ''));
 
         $filtros = [
             'viacao_id' => trim((string)$id),
@@ -39,21 +47,19 @@ final class HistoricoController
             'acao'      => trim((string)($_GET['acao']      ?? '')),
             'data_ini'  => trim((string)($_GET['data_ini']  ?? '')),
             'data_fim'  => trim((string)($_GET['data_fim']  ?? '')),
+            'status'    => $status, // ADAPTADO: Garante que a lixeira funcione aqui também
         ];
 
         $historico = $repo->all($filtros);
 
         if (!empty($historico)) {
-            // AJUSTADO: Forçando o camelCase padrão do projeto (v minúsculo)
             $filtros['nome'] = $historico[0]->viacaoNome ?? "ID #{$id}";
         } else {
             $listaViacoes = $repo->listViacoes();
             $nomeEncontrado = null;
 
             foreach ($listaViacoes as $v) {
-                // CORRIGIDO: Como vem do FETCH_ASSOC, a leitura correta é como array: $v['id']
                 $idViacao = $v['id'] ?? 0;
-
                 if ((int)$idViacao === (int)$id) {
                     $nomeEncontrado = $v['nome'] ?? null;
                     break;
@@ -70,10 +76,11 @@ final class HistoricoController
         ]);
     }
 
-
     public function index_usuarios($id): void
     {
         $repo = new HistoricoRepository();
+
+        $status = trim((string) ($_GET['status'] ?? ''));
 
         $filtros = [
             'viacao_id' => trim((string)($_GET['viacao_id'] ?? '')),
@@ -81,6 +88,7 @@ final class HistoricoController
             'acao'      => trim((string)($_GET['acao']      ?? '')),
             'data_ini'  => trim((string)($_GET['data_ini']  ?? '')),
             'data_fim'  => trim((string)($_GET['data_fim']  ?? '')),
+            'status'    => $status, // garante que funcione mesmo com soft delete
         ];
 
         $historico = $repo->all($filtros);
@@ -91,7 +99,6 @@ final class HistoricoController
             $nomeEncontrado = null;
 
             foreach ($listaUsuarios as $u) {
-                // Garante a checagem do ID independente se for propriedade ou camelCase
                 $idUsuario = $u->id ?? ($u->userId ?? 0);
                 if ((int)$idUsuario === (int)$id) {
                     $nomeEncontrado = $u->nome ?? null;

@@ -42,8 +42,14 @@
         <option value="">Todas as ações</option>
         <option value="CREATE" <?= ($filtros['acao'] ?? '') === 'CREATE' ? 'selected' : '' ?>>Criado</option>
         <option value="UPDATE" <?= ($filtros['acao'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Editado</option>
-        <option value="DELETE" <?= ($filtros['acao'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Excluído</option>
+        <!--<option value="DELETE" <?= ($filtros['acao'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Excluído</option>
+            -->
       </select>
+
+        <select name="status" onchange="this.form.submit()">
+            <option value="" <?= ($filtros['status'] ?? '') === '' ? 'selected' : '' ?>>Ativas e Inativas no momento </option>
+            <option value="deletados" <?= ($filtros['status'] ?? '') === 'deletados' ? 'selected' : '' ?>>Deletados/geral </option>
+        </select>
 
       <input type="date" name="data_ini" value="<?= htmlspecialchars($filtros['data_ini'] ?? '') ?>" title="Data inicial">
       <input type="date" name="data_fim" value="<?= htmlspecialchars($filtros['data_fim'] ?? '') ?>" title="Data final">
