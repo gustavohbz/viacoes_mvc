@@ -83,8 +83,7 @@
           <th>Viação</th>
           <th>Usuário</th>
           <th>Ação</th>
-          <th>Antes</th>
-          <th>Depois</th>
+          <th>Detalhes</th>
         </tr>
         </thead>
         <tbody>
@@ -92,7 +91,7 @@
           <tr>
 
             <!-- DATA/HORA -->
-            <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($log->criadoEm))) ?></td>
+            <td><?= $log->data ? (new DateTime($log->data))->format('d/m/Y H:i') : '—' ?></td>
 
             <!-- VIAÇÃO -->
             <!-- CORREÇÃO: usa $log->viacaoNome (do JOIN) em vez de $log->nomeViacao que não existia -->
@@ -123,26 +122,14 @@
             <!-- ANTES -->
             <!-- CORREÇÃO: antes/depois agora são JSON decodificados corretamente -->
             <td class="detalhes-col">
-              <?php if ($log->antes !== null): ?>
-                <?php foreach (($log->antesArray() ?? []) as $chave => $valor): ?>
-                  <div><strong><?= htmlspecialchars((string) $chave) ?>:</strong> <?= htmlspecialchars((string) $valor) ?></div>
-                <?php endforeach; ?>
-              <?php else: ?>
+                <?php if ($log->detalhes!== null): ?>
+                    <?php foreach (($log->detalhesArray() ?? []) as $chave => $valor): ?>
+                        <div><strong><?= htmlspecialchars((string) $chave) ?>:</strong> <?= is_array($valor) ? htmlspecialchars(json_encode($valor, JSON_UNESCAPED_UNICODE)) : htmlspecialchars((string) $valor) ?></div>
+                    <?php endforeach; ?>
+                <?php else: ?>
                 —
               <?php endif; ?>
             </td>
-
-            <!-- DEPOIS -->
-            <td class="detalhes-col">
-              <?php if ($log->depois !== null): ?>
-                <?php foreach (($log->depoisArray() ?? []) as $chave => $valor): ?>
-                  <div><strong><?= htmlspecialchars((string) $chave) ?>:</strong> <?= htmlspecialchars((string) $valor) ?></div>
-                <?php endforeach; ?>
-              <?php else: ?>
-                —
-              <?php endif; ?>
-            </td>
-
           </tr>
         <?php endforeach; ?>
         </tbody>

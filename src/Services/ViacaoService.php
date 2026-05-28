@@ -89,7 +89,7 @@ final class ViacaoService
         // AuthController gravava apenas em ['user']['id'].
         $userId = (int) ($_SESSION['user_id'] ?? $_SESSION['auth']['id'] ?? 1);
 
-        $this->historico->log($id, $userId, 'CREATE', null, $data);
+        $this->historico->log($id, 'viacoes', $userId,'CREATE', ['novo' => $data]);
 
         \invalidateCache('viacoes_ativas');
 
@@ -136,9 +136,9 @@ final class ViacaoService
             $userId = (int) ($_SESSION['user_id'] ?? 1);
 
             $this->historico->log(
-                $id, $userId, 'UPDATE',
-                ['nome' => $old->nome, 'url' => $old->url, 'cidade' => $old->cidade, 'status' => $old->status, 'logo' => $old->logo],
-                $updateData
+                $id, 'viacoes',$userId, 'UPDATE',
+                ['antigo'=>[ $old->nome, 'url' => $old->url, 'cidade' => $old->cidade, 'status' => $old->status, 'logo' => $old->logo],
+                'novo'=>$updateData]
             );
         }
 
@@ -157,9 +157,9 @@ final class ViacaoService
 
         // Auditoria ANTES de deletar (garante integridade da FK)
         $this->historico->log(
-            $id, $userId, 'DELETE',
-            ['nome' => $viacao->nome, 'url' => $viacao->url, 'cidade' => $viacao->cidade, 'status' => $viacao->status, 'logo' => $viacao->logo],
-            null
+            $id, 'viacoes', $userId,'DELETE',
+            [ 'antigo'=> ['nome' => $viacao->nome, 'url' => $viacao->url, 'cidade' => $viacao->cidade, 'status' => $viacao->status, 'logo' => $viacao->logo]
+            ]
         );
 
         $this->repo->delete($id);

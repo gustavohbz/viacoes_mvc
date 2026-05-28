@@ -23,8 +23,8 @@ final class HistoricoRepository
      * Retorna registros de auditoria com filtros opcionais.
      *
      * @param array{
-     * viacao_id?: int|string,
-     * user_id?:   int|string,
+     * usuario_id?:   int|string,
+     * tabela?: string,
      * acao?:      string,
      * data_ini?:  string,
      * data_fim?:  string,
@@ -38,19 +38,19 @@ final class HistoricoRepository
         $sql = "
             SELECT
                 h.id,
+                h.usuario_id,
+                h.tabela,
                 h.viacao_id,
-                h.user_id,
                 h.acao,
-                h.antes,
-                h.depois,
-                h.criado_em,
+                h.detalhes,
+                h.data_hora AS data,
                 v.nome  AS viacao_nome,
                 u.nome  AS usuario_nome,
                 u.email AS usuario_email,
                 v.deleted_at AS viacao_deleted_at 
-            FROM  viacoes_historico h
+            FROM  historico_geral h
             LEFT  JOIN viacoes v ON v.id = h.viacao_id
-            LEFT  JOIN users   u ON u.id = h.user_id
+            LEFT  JOIN users   u ON u.id = h.usuario_id
             WHERE 1=1
         ";
 
@@ -63,9 +63,9 @@ final class HistoricoRepository
         }
 
         // Filtro: usuário
-        if (!empty($filtros['user_id'])) {
-            $sql           .= ' AND h.user_id = :user_id';
-            $params['user_id'] = (int) $filtros['user_id'];
+        if (!empty($filtros['usuario_id'])) {
+            $sql           .= ' AND h.usuario_id = :usuario_id';
+            $params['usuario_id'] = (int) $filtros['usuario_id'];
         }
 
         // Filtro: tipo de ação (CREATE | UPDATE | DELETE)
@@ -79,13 +79,13 @@ final class HistoricoRepository
 
         // Filtro: data inicial (yyyy-mm-dd)
         if (!empty($filtros['data_ini'])) {
-            $sql              .= ' AND DATE(h.criado_em) >= :data_ini';
+            $sql              .= ' AND DATE(h.data) >= :data_ini';
             $params['data_ini'] = $filtros['data_ini'];
         }
 
         // Filtro: data final (yyyy-mm-dd)
         if (!empty($filtros['data_fim'])) {
-            $sql              .= ' AND DATE(h.criado_em) <= :data_fim';
+            $sql              .= ' AND DATE(h.data_hora) <= :data_fim';
             $params['data_fim'] = $filtros['data_fim'];
         }
 
@@ -101,7 +101,7 @@ final class HistoricoRepository
         }
         //--------------27/06 - Adicionei esse bloco para filtragem do soft delete ---------------
         // Ordenando por h.criado_em
-        $sql .= ' ORDER BY h.criado_em DESC';
+        $sql .= ' ORDER BY h.data_hora DESC';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
@@ -118,33 +118,32 @@ final class HistoricoRepository
 
     /**
      * Registra uma ação de auditoria.
-     *
+     * @param  string $tabela
      * @param int         $viacaoId  ID da viação afetada
      * @param int         $userId    ID do usuário que executou a ação
      * @param string      $acao      'CREATE' | 'UPDATE' | 'DELETE'
-     * @param array|null  $antes     Snapshot do estado anterior (será serializado em JSON)
-     * @param array|null  $depois    Snapshot do estado posterior (será serializado em JSON)
+     * @param array|null  $detalhes     Snapshot do estado anterior (será serializado em JSON)
      */
     public function log(
         int     $viacaoId,
+        string   $tabela,
         int     $userId,
         string  $acao,
-        ?array  $antes  = null,
-        ?array  $depois = null
+        ?array  $detalhes  = null,
     ): void {
         $stmt = $this->pdo->prepare('
-            INSERT INTO viacoes_historico
-                (viacao_id, user_id, acao, antes, depois)
+            INSERT INTO historico_geral
+                (viacao_id, tabela, usuario_id, acao,detalhes)
             VALUES
-                (:viacao_id, :user_id, :acao, :antes, :depois)
+                (:viacao_id,:tabela, :usuario_id, :acao, :detalhes)
         ');
 
         $stmt->execute([
             ':viacao_id' => $viacaoId,
-            ':user_id'   => $userId,
+            ':tabela' => $tabela,
+            ':usuario_id'   => $userId,
             ':acao'      => strtoupper($acao), // ADAPTADO: Mantendo salvamento em maiúsculo
-            ':antes'     => $antes  !== null ? json_encode($antes,  JSON_UNESCAPED_UNICODE) : null,
-            ':depois'    => $depois !== null ? json_encode($depois, JSON_UNESCAPED_UNICODE) : null,
+            ':detalhes'    => $detalhes !== null ? json_encode($detalhes, JSON_UNESCAPED_UNICODE) : null,
         ]);
     }
 
@@ -160,7 +159,7 @@ final class HistoricoRepository
     {
         $stmt = $this->pdo->query('
             SELECT DISTINCT v.id, v.nome
-            FROM   viacoes_historico h
+            FROM   historico_geral h
             JOIN   viacoes v ON v.id = h.viacao_id
             ORDER  BY v.nome ASC
         ');
@@ -175,8 +174,8 @@ final class HistoricoRepository
     {
         $stmt = $this->pdo->query('
             SELECT DISTINCT u.id, u.nome, u.email
-            FROM   viacoes_historico h
-            JOIN   users u ON u.id = h.user_id
+            FROM   historico_geral h
+            JOIN   users u ON u.id = h.usuario_id
             ORDER  BY u.nome ASC
         ');
 
