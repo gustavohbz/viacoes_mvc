@@ -45,6 +45,9 @@ $router->get('/admin/viacoes/{id}/edit', [ViacaoController::class, 'edit'])
 $router->put('/admin/viacoes/{id}',      [ViacaoController::class, 'update'])
   ->middleware(AuthMiddleware::class);
 
+$router->post('/admin/viacoes/{id}/restore',      [ViacaoController::class, 'restore'])
+    ->middleware(AuthMiddleware::class);
+
 $router->delete('/admin/viacoes/{id}',   [ViacaoController::class, 'destroy'])
   ->middleware(AuthMiddleware::class);
 //rota de historico proprio

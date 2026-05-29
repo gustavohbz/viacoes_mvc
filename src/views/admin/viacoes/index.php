@@ -136,6 +136,12 @@ $flash      = View::pullFlash();
                                     <input type="hidden" name="_method" value="DELETE">
                                     <button type="submit" class="btn-action btn-delete">Excluir</button>
                                 </form>
+                                <form method="POST"
+                                      action="/admin/viacoes/<?= (int) $v->id ?>/restore"
+                                      onsubmit="return confirm('Deseja reativar esta viação?')">
+                                    <input type="hidden" name="_method" value="POST">
+                                    <button type="submit" class="btn-action btn-restaurar">Restaurar</button>
+                                </form>
                             </div>
                         </td>
                     </tr>

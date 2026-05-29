@@ -90,16 +90,27 @@ final class HistoricoRepository
         }
 
         //--------------Captura o status vindo do array de filtros da tela de histórico---------
+//        $status = $filtros['status'] ?? '';
+//
+//        if ($status === 'deletados') {
+//            // traz so oq sofreu soft delete
+//            $sql .= ' AND v.deleted_at IS NOT NULL';
+//        } else {
+//            //aqui ele so puxa por padrao as viacoes que nao sao excluidas no soft delete
+//            $sql .= ' AND v.deleted_at IS NULL';
+//        }
+        //--------------Captura o status vindo do array de filtros da tela de histórico---------
         $status = $filtros['status'] ?? '';
 
         if ($status === 'deletados') {
-            // traz so oq sofreu soft delete
+            // Traz apenas o histórico de viações que sofreram soft delete no momento
             $sql .= ' AND v.deleted_at IS NOT NULL';
-        } else {
-            //aqui ele so puxa por padrao as viacoes que nao sao excluidas no soft delete
+        } elseif ($status === 'ativas_inativas') {
+            // Traz apenas o histórico de viações que NÃO estão deletadas no momento
             $sql .= ' AND v.deleted_at IS NULL';
         }
         //--------------27/06 - Adicionei esse bloco para filtragem do soft delete ---------------
+
         // Ordenando por h.criado_em
         $sql .= ' ORDER BY h.data_hora DESC';
 

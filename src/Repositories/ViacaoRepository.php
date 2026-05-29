@@ -109,4 +109,15 @@ final class ViacaoRepository
         $stmt = $this->pdo->prepare('UPDATE viacoes SET deleted_at = NOW() WHERE id = :id');
         $stmt->execute(['id' => $id]);
     }
+    // Dentro de src/Repositories/ViacaoRepository.php
+
+    public function restore(int $id): void{
+        $stmt = $this->pdo->prepare('
+        UPDATE viacoes 
+        SET deleted_at = NULL, 
+            status = "ativo" 
+        WHERE id = :id
+    ');
+        $stmt->execute([':id' => $id]);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Core\View;
 use App\Repositories\HistoricoRepository;
+use PHPUnit\Exception;
 
 final class HistoricoController
 {
@@ -114,4 +115,15 @@ final class HistoricoController
             'filtros'   => $filtros
         ]);
     }
+//    public function restaurar(array $params): void{
+//        $id = (int) ($params['id'] ?? 0);
+//        try {
+//            $this->service->restaurar($id); //se a variavel id,convertida em inteiro receber na url um valor diferente de 0
+//            //tente chamar o service restaurar com o parametro da variavel já pega
+//            $_SESSION['sucess'] = 'Restaurado com sucesso';
+//        } catch (Exception $e){
+//            $_SESSION['error'] = 'error ao restaurar: ' . $e->getMessage();
+//        }
+//        header('Location: /admin/viacoes');
+//    }
 }

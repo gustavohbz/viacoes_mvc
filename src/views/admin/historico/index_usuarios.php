@@ -60,8 +60,7 @@
                     <th>ID Log</th>
                     <th>Viação Afetada</th>
                     <th>ID da Viação</th>
-                    <th>Dados Anteriores (Antes)</th>
-                    <th>Dados Novos (Depois)</th>
+                    <th>Detalhes</th>
                     <th>Data/Hora</th>
                     <th>Ação Executada</th>
                 </tr>
@@ -84,24 +83,24 @@
 
                         <td><?= (int) ($item->viacaoId ?? 0) ?></td>
 
-                        <td class="detalhes-col">
-                            <?php
-                            // Tenta executar o metodo do modelo para pegar o array do JSON
-                            $antes = method_exists($item, 'antesArray') ? $item->antesArray() : ($item->antes ?? null);
-                            ?>
-                            <?php if (!empty($antes) && is_array($antes)): ?>
-                                <?php foreach ($antes as $chave => $valor): ?>
-                                    <div><strong><?= htmlspecialchars((string) $chave) ?>:</strong> <?= htmlspecialchars((string) $valor) ?></div>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <span style="color: var(--text-muted);">—</span>
-                            <?php endif; ?>
-                        </td>
+<!--                        <td class="detalhes-col">-->
+<!--                            --><?php
+//                            // Tenta executar o metodo do modelo para pegar o array do JSON
+//                            $antes = method_exists($item, 'antesArray') ? $item->antesArray() : ($item->antes ?? null);
+//                            ?>
+<!--                            --><?php //if (!empty($antes) && is_array($antes)): ?>
+<!--                                --><?php //foreach ($antes as $chave => $valor): ?>
+<!--                                    <div><strong>--><?php //= htmlspecialchars((string) $chave) ?><!--:</strong> --><?php //= htmlspecialchars((string) $valor) ?><!--</div>-->
+<!--                                --><?php //endforeach; ?>
+<!--                            --><?php //else: ?>
+<!--                                <span style="color: var(--text-muted);">—</span>-->
+<!--                            --><?php //endif; ?>
+<!--                        </td>-->
 
                         <td class="detalhes-col">
                             <?php
                             // Tenta executar o metodo do modelo para pegar o array do JSON
-                            $depois = method_exists($item, 'depoisArray') ? $item->depoisArray() : ($item->depois ?? null);
+                            $depois = method_exists($item, 'detalhes') ? $item->detalhesArray() : ($item->depois ?? null);
                             ?>
                             <?php if (!empty($depois) && is_array($depois)): ?>
                                 <?php foreach ($depois as $chave => $valor): ?>
@@ -113,8 +112,8 @@
                         </td>
 
                         <td>
-                            <?= !empty($item->criadoEm)
-                                    ? date('d/m/Y H:i', strtotime($item->criadoEm))
+                            <?= !empty($item->data)
+                                    ? date('d/m/Y H:i', strtotime($item->data))
                                     : '—' ?>
                         </td>
 

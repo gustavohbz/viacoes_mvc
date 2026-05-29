@@ -11,17 +11,18 @@ use Exception;
 
 final class ViacaoService
 {
-    private ViacaoRepository   $repo;
-    private ViacaoValidator    $validator;
+    private ViacaoRepository $repo;
+    private ViacaoValidator $validator;
     private HistoricoRepository $historico;
-    private string             $uploadDir;
+    private string $uploadDir;
 
     public function __construct(
-        ?ViacaoRepository    $repo      = null,
+        ?ViacaoRepository    $repo = null,
         ?ViacaoValidator     $validator = null,
         ?HistoricoRepository $historico = null
-    ) {
-        $this->repo      = $repo      ?? new ViacaoRepository();
+    )
+    {
+        $this->repo = $repo ?? new ViacaoRepository();
         $this->validator = $validator ?? new ViacaoValidator();
         $this->historico = $historico ?? new HistoricoRepository();
 
@@ -33,10 +34,10 @@ final class ViacaoService
     public function all(string $busca, string $status, string $ordem, string $dir): array
     {
         $isHomeQuery = (
-            $busca   === '' &&
-            $status  === 'ativo' &&
-            $ordem   === 'nome' &&
-            $dir     === 'ASC'
+            $busca === '' &&
+            $status === 'ativo' &&
+            $ordem === 'nome' &&
+            $dir === 'ASC'
         );
 
         if ($isHomeQuery) {
@@ -56,7 +57,7 @@ final class ViacaoService
         if ($isHomeQuery) {
             \setCachedData(
                 'viacoes_ativas',
-                array_map(static fn(Viacao $v): array => (array) $v, $viacoes)
+                array_map(static fn(Viacao $v): array => (array)$v, $viacoes)
             );
         }
 
@@ -77,19 +78,19 @@ final class ViacaoService
         }
 
         $id = $this->repo->create([
-            'nome'   => trim($data['nome']),
-            'url'    => trim($data['url']),
+            'nome' => trim($data['nome']),
+            'url' => trim($data['url']),
             'cidade' => trim($data['cidade']),
             'status' => ($data['status'] ?? '') === 'inativo' ? 'inativo' : 'ativo',
-            'logo'   => $this->handleUpload($fileLogo),
+            'logo' => $this->handleUpload($fileLogo),
         ]);
 
         // CORREÇÃO: user_id agora lido de $_SESSION['user_id'] (gravado no login)
         // A versão anterior tinha fallback para 1 porque leia ['user_id'] mas o
         // AuthController gravava apenas em ['user']['id'].
-        $userId = (int) ($_SESSION['user_id'] ?? $_SESSION['auth']['id'] ?? 1);
+        $userId = (int)($_SESSION['user_id'] ?? $_SESSION['auth']['id'] ?? 1);
 
-        $this->historico->log($id, 'viacoes', $userId,'CREATE', ['novo' => $data]);
+        $this->historico->log($id, 'viacoes', $userId, 'CREATE', ['novo' => $data]);
 
         \invalidateCache('viacoes_ativas');
 
@@ -111,18 +112,26 @@ final class ViacaoService
         }
 
         $updateData = [
-            'nome'   => trim($data['nome']),
-            'url'    => trim($data['url']),
+            'nome' => trim($data['nome']),
+            'url' => trim($data['url']),
             'cidade' => trim($data['cidade']),
             'status' => ($data['status'] ?? '') === 'inativo' ? 'inativo' : 'ativo',
         ];
 
         $mudancas = [];
 
-        if ($old->nome   !== $updateData['nome'])   { $mudancas[] = "Nome: '{$old->nome}' → '{$updateData['nome']}'"; }
-        if ($old->url    !== $updateData['url'])     { $mudancas[] = "URL: '{$old->url}' → '{$updateData['url']}'"; }
-        if ($old->cidade !== $updateData['cidade']) { $mudancas[] = "Cidade: '{$old->cidade}' → '{$updateData['cidade']}'"; }
-        if ($old->status !== $updateData['status']) { $mudancas[] = "Status: '{$old->status}' → '{$updateData['status']}'"; }
+        if ($old->nome !== $updateData['nome']) {
+            $mudancas[] = "Nome: '{$old->nome}' → '{$updateData['nome']}'";
+        }
+        if ($old->url !== $updateData['url']) {
+            $mudancas[] = "URL: '{$old->url}' → '{$updateData['url']}'";
+        }
+        if ($old->cidade !== $updateData['cidade']) {
+            $mudancas[] = "Cidade: '{$old->cidade}' → '{$updateData['cidade']}'";
+        }
+        if ($old->status !== $updateData['status']) {
+            $mudancas[] = "Status: '{$old->status}' → '{$updateData['status']}'";
+        }
 
         // CORREÇÃO: verificação de erro do upload antes de processar
         if ($fileLogo !== null && ($fileLogo['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
@@ -133,12 +142,12 @@ final class ViacaoService
         $this->repo->update($id, $updateData);
 
         if (!empty($mudancas)) {
-            $userId = (int) ($_SESSION['user_id'] ?? 1);
+            $userId = (int)($_SESSION['user_id'] ?? 1);
 
             $this->historico->log(
-                $id, 'viacoes',$userId, 'UPDATE',
-                ['antigo'=>[ $old->nome, 'url' => $old->url, 'cidade' => $old->cidade, 'status' => $old->status, 'logo' => $old->logo],
-                'novo'=>$updateData]
+                $id, 'viacoes', $userId, 'UPDATE',
+                ['antigo' => ['nome' => $old->nome, 'url' => $old->url, 'cidade' => $old->cidade, 'status' => $old->status, 'logo' => $old->logo],
+                    'novo' => $updateData]
             );
         }
 
@@ -153,12 +162,12 @@ final class ViacaoService
             return;
         }
 
-        $userId = (int) ($_SESSION['user_id'] ?? 1);
+        $userId = (int)($_SESSION['user_id'] ?? 1);
 
         // Auditoria ANTES de deletar (garante integridade da FK)
         $this->historico->log(
-            $id, 'viacoes', $userId,'DELETE',
-            [ 'antigo'=> ['nome' => $viacao->nome, 'url' => $viacao->url, 'cidade' => $viacao->cidade, 'status' => $viacao->status, 'logo' => $viacao->logo]
+            $id, 'viacoes', $userId, 'DELETE',
+            ['antigo' => ['nome' => $viacao->nome, 'url' => $viacao->url, 'cidade' => $viacao->cidade, 'status' => $viacao->status, 'logo' => $viacao->logo]
             ]
         );
 
@@ -199,12 +208,12 @@ final class ViacaoService
         }
 
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime  = finfo_file($finfo, $tmpName);
+        $mime = finfo_file($finfo, $tmpName);
         finfo_close($finfo);
 
         $allowedMimes = [
             'image/jpeg' => 'jpg',
-            'image/png'  => 'png',
+            'image/png' => 'png',
             'image/webp' => 'webp',
         ];
 
@@ -223,5 +232,34 @@ final class ViacaoService
         }
 
         return $nomeLogo;
+    }
+
+    // Dentro de src/Services/ViacaoService.php
+    public function restore(int $id): void
+    {
+        // 1. Atualiza no banco primeiro
+        $this->repo->restore($id);
+
+        // 2. Busca o registro atualizado para registrar no log do histórico
+        $old = $this->repo->find($id);
+
+        $userIdLogado = (int)($_SESSION['user_id'] ?? 1);
+
+        $this->historico->log(
+            $id,
+            'viacoes',
+            $userIdLogado,
+            'RESTORE',
+            [
+                'antigo' => [
+                    'status' => 'inativo',
+                    'deleted_at' => 'deletado'
+                ],
+                'novo' => [
+                    'status' => 'ativo',
+                    'deleted_at' => null
+                ]
+            ]
+        );
     }
 }

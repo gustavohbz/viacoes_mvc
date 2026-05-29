@@ -108,6 +108,7 @@ final class ViacaoController
         }
     }
 
+
     // Remove uma viação (DELETE)
     public function destroy(int $id): void
     {
@@ -132,5 +133,18 @@ final class ViacaoController
         }
 
         return $_FILES['logo'];
+    }
+    public function restore(int $id): void
+    {
+        try {
+            $this->viacoes->restore($id);
+            $_SESSION['success'] = 'Viação restaurada com sucesso!';
+        } catch (Exception $e) {
+            $_SESSION['error'] = 'Erro ao restaurar: ' . $e->getMessage();
+        }
+
+        // Força o redirecionamento para a listagem principal de ativos
+        header('Location: /admin/viacoes?status=ativo');
+        exit;
     }
 }

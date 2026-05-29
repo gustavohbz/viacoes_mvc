@@ -76,7 +76,6 @@
             <th>Data da Modificação</th>
             <th>Usuário</th>
             <th>Ação</th>
-            <th>Antes</th>
             <th>Depois</th>
         </tr>
         </thead>
@@ -85,7 +84,7 @@
           <tr>
             <td><?= $item->id ?></td>
             <!-- DATA/HORA -->
-            <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($item->criadoEm))) ?></td>
+            <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($item->data))) ?></td>
 
             <!-- USUÁRIO -->
             <td><?= htmlspecialchars($item->usuarioNome ?? '—') ?></td>
@@ -111,26 +110,37 @@
 
             <!-- ANTES -->
             <!-- CORREÇÃO: antes/depois agora são JSON decodificados corretamente -->
-            <td class="detalhes-col">
-              <?php if ($item->antes !== null): ?>
-                <?php foreach (($item->antesArray() ?? []) as $chave => $valor): ?>
-                  <div><strong><?= htmlspecialchars((string) $chave) ?>:</strong> <?= htmlspecialchars((string) $valor) ?></div>
-                <?php endforeach; ?>
-              <?php else: ?>
-                —
-              <?php endif; ?>
-            </td>
+<!--            <td class="detalhes-col">-->
+<!--              --><?php //if ($item->antes !== null): ?>
+<!--                --><?php //foreach (($item->antesArray() ?? []) as $chave => $valor): ?>
+<!--                  <div><strong>--><?php //= htmlspecialchars((string) $chave) ?><!--:</strong> --><?php //= htmlspecialchars((string) $valor) ?><!--</div>-->
+<!--                --><?php //endforeach; ?>
+<!--              --><?php //else: ?>
+<!--                —-->
+<!--              --><?php //endif; ?>
+<!--            </td>-->
 
             <!-- DEPOIS -->
-            <td class="detalhes-col">
-              <?php if ($item->depois !== null): ?>
-                <?php foreach (($item->depoisArray() ?? []) as $chave => $valor): ?>
-                  <div><strong><?= htmlspecialchars((string) $chave) ?>:</strong> <?= htmlspecialchars((string) $valor) ?></div>
-                <?php endforeach; ?>
-              <?php else: ?>
-                —
-              <?php endif; ?>
-            </td>
+              <td class="detalhes-col">
+                  <?php if ($item->detalhes !== null): ?>
+                      <?php foreach (($item->detalhesArray() ?? []) as $contexto => $propriedades): ?>
+                          <div class="mb-1">
+                              <strong><?= htmlspecialchars(ucfirst((string) $contexto)) ?>:</strong>
+                              <?php if (is_array($propriedades)): ?>
+                                  <span class="text-muted" style="font-size: 0.9em;">
+            Status: <?= htmlspecialchars((string) ($propriedades['status'] ?? '—')) ?>,
+            Nome: <?= htmlspecialchars((string) ($propriedades['nome'] ?? '—')) ?>,
+            Logo: <?= htmlspecialchars((string) ($propriedades['logo'] ?? '—')) ?>,
+          </span>
+                              <?php else: ?>
+                                  <?= htmlspecialchars((string) $propriedades) ?>
+                              <?php endif; ?>
+                          </div>
+                      <?php endforeach; ?>
+                  <?php else: ?>
+                      —
+                  <?php endif; ?>
+              </td>
 
           </tr>
         <?php endforeach; ?>
