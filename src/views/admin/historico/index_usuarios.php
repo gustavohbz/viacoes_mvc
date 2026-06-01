@@ -23,22 +23,85 @@
         </div>
     <?php endif; ?>
 
-    <section class="header-actions">
+    <?php if (!empty($usuarioSelecionado)): ?>
+
+
+        <div class="form-card">
+
+            <form onsubmit="return false;">
+
+                <div class="form-grid">
+
+                    <div class="campo">
+                        <label>
+                            Nome
+                        </label>
+                        <input
+                                type="text"
+                                value="<?= htmlspecialchars($usuarioSelecionado['nome'] ?? '—') ?>"
+                                readonly
+                                disabled
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label>
+                            E-mail
+                        </label>
+                        <input
+                                type="text"
+                                value="<?= htmlspecialchars($usuarioSelecionado['email'] ?? '—') ?>"
+                                readonly
+                                disabled
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label>
+                            Função
+                        </label>
+                        <input
+                                type="text"
+                                value="<?= htmlspecialchars(ucfirst($usuarioSelecionado['role'] ?? '—')) ?>"
+                                readonly
+                                disabled
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label>
+                            Status
+                        </label>
+                        <select disabled >
+                            <option selected>
+                                <?= htmlspecialchars(ucfirst($usuarioSelecionado['status'] ?? '—')) ?>
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
+
+            </form>
+        </div>
+    <?php endif; ?>
+
+    <section class="header-actions" style="margin-top: 13px">
         <div class="header-buttons">
             <a href="/admin/usuarios" class="btn btn-secondary">← Voltar para Usuários</a>
         </div>
 
-        <form method="GET" action="/admin/usuarios/<?= (int)$filtros['user_id'] ?>/historico_usuarios" class="form-busca">
-            <select name="acao">
-                <option value="">Todas as Ações</option>
-                <option value="CREATE" <?= ($filtros['acao'] ?? '') === 'CREATE' ? 'selected' : '' ?>>Criação</option>
-                <option value="UPDATE" <?= ($filtros['acao'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Edição</option>
-                <option value="DELETE" <?= ($filtros['acao'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Exclusão</option>
-            </select>
+        <form method="GET" action="/admin/usuarios/<?= (int)$filtros['user_id'] ?>/historico-usuarios" class="form-busca">
 
-            <button type="submit" class="btn btn-search">Filtrar</button>
+            <select name="acao" onchange="this.form.submit()">
+                <option value="">Todas as ações</option>
+                <option value="CREATE" <?= ($filtros['acao'] ?? '') === 'CREATE' ? 'selected' : '' ?>>Criado</option>
+                <option value="UPDATE" <?= ($filtros['acao'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Editado</option>
+                <option value="DELETE" <?= ($filtros['acao'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Excluído</option>
+                <option value="RESTORE" <?= ($filtros['acao'] ?? '') === 'RESTORE' ? 'selected' : '' ?>>Restaurado</option>
+            </select>
         </form>
     </section>
+
 
     <div class="table-wrapper">
 
@@ -46,7 +109,7 @@
             <table class="table">
                 <tbody>
                 <tr>
-                    <td colspan="7" class="empty-row">
+                    <td colspan="6" class="empty-row">
                         Nenhum registro de auditoria encontrado para este usuário.
                     </td>
                 </tr>
@@ -83,28 +146,16 @@
 
                         <td><?= (int) ($item->viacaoId ?? 0) ?></td>
 
-<!--                        <td class="detalhes-col">-->
-<!--                            --><?php
-//                            // Tenta executar o metodo do modelo para pegar o array do JSON
-//                            $antes = method_exists($item, 'antesArray') ? $item->antesArray() : ($item->antes ?? null);
-//                            ?>
-<!--                            --><?php //if (!empty($antes) && is_array($antes)): ?>
-<!--                                --><?php //foreach ($antes as $chave => $valor): ?>
-<!--                                    <div><strong>--><?php //= htmlspecialchars((string) $chave) ?><!--:</strong> --><?php //= htmlspecialchars((string) $valor) ?><!--</div>-->
-<!--                                --><?php //endforeach; ?>
-<!--                            --><?php //else: ?>
-<!--                                <span style="color: var(--text-muted);">—</span>-->
-<!--                            --><?php //endif; ?>
-<!--                        </td>-->
-
                         <td class="detalhes-col">
                             <?php
-                            // Tenta executar o metodo do modelo para pegar o array do JSON
-                            $depois = method_exists($item, 'detalhes') ? $item->detalhesArray() : ($item->depois ?? null);
+                            $depois = method_exists($item, 'detalhesArray') ? $item->detalhesArray() : ($item->depois ?? null);
                             ?>
                             <?php if (!empty($depois) && is_array($depois)): ?>
                                 <?php foreach ($depois as $chave => $valor): ?>
-                                    <div><strong><?= htmlspecialchars((string) $chave) ?>:</strong> <?= htmlspecialchars((string) $valor) ?></div>
+                                    <div>
+                                        <strong><?= htmlspecialchars((string) $chave) ?>:</strong>
+                                        <?= is_array($valor) ? htmlspecialchars(json_encode($valor, JSON_UNESCAPED_UNICODE)) : htmlspecialchars((string) $valor) ?>
+                                    </div>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <span style="color: var(--text-muted);">—</span>
@@ -118,9 +169,9 @@
                         </td>
 
                         <td>
-              <span class="badge badge-<?= strtolower($item->acao ?? '') ?>">
-                <?= htmlspecialchars($item->acao ?? '') ?>
-              </span>
+                            <span class="badge badge-<?= strtolower($item->acao ?? '') ?>">
+                                <?= htmlspecialchars($item->acao ?? '') ?>
+                            </span>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -128,6 +179,23 @@
             </table>
 
         <?php endif; ?>
+        <!-- aqui e o bloco da paginação,ele e o mesmo do viações e do logs---------------------------------------->>
+        <?php if (($paginaAtual ?? 1) > 1): ?>
+            <?php $filtrosAnterior = array_merge($_GET, ['pagina' => $paginaAtual - 1]); ?>
+            <a href="/admin/usuarios/<?= (int)$filtros['user_id'] ?>/historico-usuarios?<?= http_build_query($filtrosAnterior) ?>" style="text-decoration: none; margin-right: 10px; font-weight: bold; color: #007bff;">
+                <?= $paginaAtual - 1 ?>
+            </a>
+        <?php endif; ?>
+
+        <span style="font-weight: bold; margin-right: 10px; color: #333;"><?= (int)($paginaAtual ?? 1) ?></span>
+
+        <?php if (count($historico) === 10): ?>
+            <?php $filtrosProximo = array_merge($_GET, ['pagina' => $paginaAtual + 1]); ?>
+            <a href="/admin/usuarios/<?= (int)$filtros['user_id'] ?>/historico-usuarios?<?= http_build_query($filtrosProximo) ?>" style="text-decoration: none; font-weight: bold; color: #007bff;">
+                <?= $paginaAtual + 1 ?>
+            </a>
+        <?php endif; ?>
+        <!----------------------------------------------------------------------------------->
 
     </div>
 
@@ -139,3 +207,6 @@
 <script src="/script.js"></script>
 </body>
 </html>
+<!-- teste1
+teste@teste.com
+123456

@@ -37,36 +37,52 @@ $flash      = View::pullFlash();
     <?php endif; ?>
 
     <section class="header-actions">
+
         <div class="header-buttons">
-            <a href="/admin/viacoes/create" class="btn btn-primary">+ Nova Viação</a>
-            <a href="/admin/historico" class="btn btn-secondary">Ver Histórico Geral</a>
-            <a href="/admin/usuarios" class="btn btn-secondary">Gerenciar Usuários</a>
+            <a href="/admin/viacoes/create" class="btn btn-primary">
+                + Nova Viação
+            </a>
+            <a href="/admin/historico" class="btn btn-secondary">
+                Ver Histórico Geral
+            </a>
+            <a href="/admin/usuarios" class="btn btn-secondary">
+                Gerenciar Usuários
+            </a>
         </div>
 
         <form method="GET" action="/admin/viacoes" class="form-busca">
-            <input
-                    type="text"
-                    name="busca"
-                    value="<?= htmlspecialchars($filtros['busca'] ?? '') ?>"
-                    placeholder="Buscar por nome ou cidade..."
-                    autocomplete="off"
-            >
 
-            <select name="status" onchange="this.form.submit()">
-                <option value="" <?= ($filtros['status'] ?? '') === '' ? 'selected' : '' ?>>Todas as Viações</option>
-                <option value="ativo" <?= ($filtros['status'] ?? '') === 'ativo' ? 'selected' : '' ?>>Apenas Ativos</option>
-                <option value="inativo" <?= ($filtros['status'] ?? '') === 'inativo' ? 'selected' : '' ?>>Apenas Inativos</option>
-                <!--adição da opção de filtrar os que sofreram o soft delete -->
-                <option value="deletados" <?= ($filtros['status'] ?? '') === 'deletados' ? 'selected' : '' ?>>Deletados</option>
-                <!-- ------------------------------->
-            </select>
+            <div class="campo-busca" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
 
-            <button type="submit" class="btn btn-search">Pesquisar</button>
+                <input
+                        type="text"
+                        name="busca"
+                        value="<?= htmlspecialchars($filtros['busca'] ?? '') ?>"
+                        placeholder="Buscar por nome ou cidade..."
+                        autocomplete="off"
+                >
 
-            <?php if (!empty($filtros['busca']) || !empty($filtros['status'])): ?>
-                <a href="/admin/viacoes" class="btn-limpar">Limpar</a>
-            <?php endif; ?>
+                <select name="status" onchange="this.form.submit()">
+                    <option value="" <?= ($filtros['status'] ?? '') === '' ? 'selected' : '' ?>>Todas as Viações</option>
+                    <option value="ativo" <?= ($filtros['status'] ?? '') === 'ativo' ? 'selected' : '' ?>>Apenas Ativos</option>
+                    <option value="inativo" <?= ($filtros['status'] ?? '') === 'inativo' ? 'selected' : '' ?>>Apenas Inativos</option>
+                    <option value="deletados" <?= ($filtros['status'] ?? '') === 'deletados' ? 'selected' : '' ?>>Deletados</option>
+                </select>
+
+                <button type="submit" class="btn btn-search">
+                    Pesquisar
+                </button>
+
+                <?php if (!empty($filtros['busca']) || !empty($filtros['status'])): ?>
+                    <a href="/admin/viacoes" class="btn-limpar">
+                        Limpar
+                    </a>
+                <?php endif; ?>
+
+            </div>
+
         </form>
+
     </section>
 
     <div class="table-wrapper">

@@ -69,7 +69,7 @@ final class HistoricoRepository
         }
 
         // Filtro: tipo de ação (CREATE | UPDATE | DELETE)
-        $acoesValidas = ['CREATE', 'UPDATE', 'DELETE'];
+        $acoesValidas = ['CREATE', 'UPDATE', 'DELETE','RESTORE'];
         $acao = strtoupper(trim($filtros['acao'] ?? ''));
 
         if ($acao !== '' && in_array($acao, $acoesValidas, true)) {
@@ -79,7 +79,7 @@ final class HistoricoRepository
 
         // Filtro: data inicial (yyyy-mm-dd)
         if (!empty($filtros['data_ini'])) {
-            $sql              .= ' AND DATE(h.data) >= :data_ini';
+            $sql              .= ' AND DATE(h.data_hora) >= :data_ini';
             $params['data_ini'] = $filtros['data_ini'];
         }
 
@@ -88,31 +88,22 @@ final class HistoricoRepository
             $sql              .= ' AND DATE(h.data_hora) <= :data_fim';
             $params['data_fim'] = $filtros['data_fim'];
         }
-
-        //--------------Captura o status vindo do array de filtros da tela de histórico---------
-//        $status = $filtros['status'] ?? '';
-//
-//        if ($status === 'deletados') {
-//            // traz so oq sofreu soft delete
-//            $sql .= ' AND v.deleted_at IS NOT NULL';
-//        } else {
-//            //aqui ele so puxa por padrao as viacoes que nao sao excluidas no soft delete
-//            $sql .= ' AND v.deleted_at IS NULL';
-//        }
         //--------------Captura o status vindo do array de filtros da tela de histórico---------
         $status = $filtros['status'] ?? '';
 
         if ($status === 'deletados') {
-            // Traz apenas o histórico de viações que sofreram soft delete no momento
-            $sql .= ' AND v.deleted_at IS NOT NULL';
-        } elseif ($status === 'ativas_inativas') {
-            // Traz apenas o histórico de viações que NÃO estão deletadas no momento
-            $sql .= ' AND v.deleted_at IS NULL';
+            $sql .= ' AND (h.acao = "DELETE" OR v.deleted_at IS NOT NULL)';
+        } else {
         }
+
         //--------------27/06 - Adicionei esse bloco para filtragem do soft delete ---------------
 
         // Ordenando por h.criado_em
         $sql .= ' ORDER BY h.data_hora DESC';
+
+        if (isset($filtros['limite']) && isset($filtros['offset'])) {
+            $sql .= " LIMIT " . (int)$filtros['limite'] . " OFFSET " . (int)$filtros['offset'];
+        }
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
@@ -153,7 +144,7 @@ final class HistoricoRepository
             ':viacao_id' => $viacaoId,
             ':tabela' => $tabela,
             ':usuario_id'   => $userId,
-            ':acao'      => strtoupper($acao), // ADAPTADO: Mantendo salvamento em maiúsculo
+            ':acao'      => strtoupper($acao),
             ':detalhes'    => $detalhes !== null ? json_encode($detalhes, JSON_UNESCAPED_UNICODE) : null,
         ]);
     }

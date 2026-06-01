@@ -19,50 +19,57 @@
   </header>
 
   <!-- FILTROS -->
-  <section class="header-actions">
-    <div class="header-buttons">
-      <a href="/admin/viacoes" class="btn btn-secondary">Voltar para a lista</a>
-    </div>
+    <section class="header-actions">
 
-    <form method="GET" action="/admin/historico" class="form-busca">
+        <div class="header-buttons">
+            <a href="/admin/viacoes" class="btn btn-secondary">
+                Voltar para a lista
+            </a>
+        </div>
 
-      <?php if (!empty($viacoes)): ?>
-        <select name="viacao_id">
-          <option value="">Todas as viações</option>
-          <?php foreach ($viacoes as $v): ?>
-            <option value="<?= (int) $v['id'] ?>"
-              <?= ($filtros['viacao_id'] == $v['id']) ? 'selected' : '' ?>>
-              <?= htmlspecialchars($v['nome']) ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-      <?php endif; ?>
+        <form method="GET" action="/admin/historico" class="form-busca">
+            <input type="hidden" name="pagina" id="input-pagina" value="<?= (int)($paginaAtual ?? 1) ?>"> <!--aqui ele armazena a pagina para que n fique atyualizando-->
 
-      <select name="acao">
-        <option value="">Todas as ações</option>
-        <option value="CREATE" <?= ($filtros['acao'] ?? '') === 'CREATE' ? 'selected' : '' ?>>Criado</option>
-        <option value="UPDATE" <?= ($filtros['acao'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Editado</option>
-        <option value="DELETE" <?= ($filtros['acao'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Excluído</option>
+            <div class="campo-busca" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
 
-      </select>
+                <?php if (!empty($viacoes)): ?>
+                    <select name="viacao_id">
+                        <option value="">Todas as viações</option>
+                        <?php foreach ($viacoes as $v): ?>
+                            <option value="<?= (int) $v['id'] ?>"
+                                    <?= ((int)($filtros['viacao_id'] ?? 0) === (int)$v['id']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($v['nome']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
 
-        <select name="status" onchange="this.form.submit()">
-            <option value="" <?= ($filtros['status'] ?? '') === '' ? 'selected' : '' ?>>Ativas e Inativas no momento </option>
-            <option value="deletados" <?= ($filtros['status'] ?? '') === 'deletados' ? 'selected' : '' ?>>Deletados/geral </option>
-            <option value="" <?= ($filtros['status'] ?? '') === '' ? 'selected' : '' ?>>Geral</option>
-        </select>
+                <select name="acao">
+                    <option value="">Todas as ações</option>
+                    <option value="CREATE" <?= ($filtros['acao'] ?? '') === 'CREATE' ? 'selected' : '' ?>>Criado</option>
+                    <option value="UPDATE" <?= ($filtros['acao'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Editado</option>
+                    <option value="DELETE" <?= ($filtros['acao'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Excluído</option>
+                    <option value="RESTORE" <?= ($filtros['acao'] ?? '') === 'RESTORE' ? 'selected' : '' ?>>Restore</option>
+                </select>
 
-      <input type="date" name="data_ini" value="<?= htmlspecialchars($filtros['data_ini'] ?? '') ?>" title="Data inicial">
-      <input type="date" name="data_fim" value="<?= htmlspecialchars($filtros['data_fim'] ?? '') ?>" title="Data final">
+                <input type="date" name="data_ini" value="<?= htmlspecialchars($filtros['data_ini'] ?? '') ?>" title="Data inicial">
+                <input type="date" name="data_fim" value="<?= htmlspecialchars($filtros['data_fim'] ?? '') ?>" title="Data final">
 
-      <button type="submit" class="btn btn-search">Filtrar</button>
+                <button type="submit" class="btn btn-search">
+                    Filtrar
+                </button>
 
-      <?php if (array_filter($filtros)): ?>
-        <a href="/admin/historico" class="btn-limpar">Limpar</a>
-      <?php endif; ?>
+                <?php if (array_filter($filtros)): ?>
+                    <a href="/admin/historico" class="btn-limpar">
+                        Limpar
+                    </a>
+                <?php endif; ?>
 
-    </form>
-  </section>
+            </div>
+
+        </form>
+
+    </section>
 
   <!-- TABELA -->
   <div class="table-wrapper">
@@ -139,6 +146,28 @@
 
     <?php endif; ?>
   </div>
+    <?php if (($paginaAtual ?? 1) > 1): ?>
+        <?php
+        // mantem os filtros e so atualiza a pagina
+        $filtrosAnterior = array_merge($_GET, ['pagina' => $paginaAtual - 1]);
+        ?>
+        <a href="/admin/historico?<?= http_build_query($filtrosAnterior) ?>">
+            <?= $paginaAtual - 1 ?>
+        </a>
+    <?php endif; ?>
+
+    <span><?= (int)($paginaAtual ?? 1) ?></span>
+
+    <?php if (count($historico) === 10): ?>
+        <?php
+        // Copia os filtros atuais e altera apenas a página
+        $filtrosProximo = array_merge($_GET, ['pagina' => $paginaAtual + 1]);
+        ?>
+        <a href="/admin/historico?<?= http_build_query($filtrosProximo) ?>">
+            <?= $paginaAtual + 1 ?>
+        </a>
+    <?php endif; ?>
+
 
 </div>
 <script src="/script.js"></script>

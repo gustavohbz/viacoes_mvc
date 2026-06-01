@@ -77,6 +77,11 @@ $router->delete('/admin/usuarios/{id}',   [UsuarioController::class, 'destroy'])
 //historico especifico do usuario
 $router->get('/admin/usuarios/{id}/historico-usuarios', [HistoricoController::class, 'index_usuarios'])
     ->middleware(AuthMiddleware::class);
+//abaixo o filtro de usuarios,dificil...
+$router->post('/admin/usuarios/{id}/historico-usuarios', [HistoricoController::class, 'index_usuarios'])
+    ->middleware(AuthMiddleware::class);
+
+$router->get('/admin/usuarios/{id}/historico-usuarios', [HistoricoController::class, 'index_usuarios']);
 
 // ── Admin — Histórico ─────────────────────────────────────
 $router->get('/admin/historico', [HistoricoController::class, 'index'])
